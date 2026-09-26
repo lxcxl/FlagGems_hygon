@@ -32,6 +32,7 @@ class vendors(Enum):
     SPACEMIT = 13
     THEAD = 14
     ARM = 15
+    BIREN = 16
 
     @classmethod
     def get_all_vendors(cls) -> dict:
@@ -121,7 +122,6 @@ DEFAULT_STRATEGIES = {
     # Hygon's MV kernel keeps input strides in its autotune key.  Keep this
     # separate from the generic two-key MV contract used by other backends.
     "mv_hygon": ["align32", "align32", "default", "default", "default"],
-
     "mul": ["align32", "default"],
     "mul_broadcast_2d": ["align32", "default", "default"],
     "sparse_attention": ["align32", "align32", "align32"],
@@ -280,6 +280,7 @@ _VENDOR_TORCH_ATTR = {
     "mthreads": "musa",
     "sunrise": "ptpu",
     "tsingmicro": "txda",
+    "biren": "supa",
 }
 
 __all__ = [

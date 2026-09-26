@@ -230,25 +230,6 @@ class TunedConfigLoader(object):
                 for w in ranges["w"]
             ]
 
-        if op_name in ("baddbmm_hygon", "baddbmm_hygon_splitk", "baddbmm_hygon_gemv"):
-            # Algorithm families share the YAML contract, not a shape-specific
-            # list. Compiler scheduling is searched alongside kernel parameters.
-            names = [name for name in ranges if name not in ("s", "w")]
-            return [
-                triton.Config(
-                    {
-                        ("sched_latency" if name == "SCHED_LATENCY" else name): value
-                        for name, value in zip(names, values)
-                    },
-                    num_stages=s,
-                    num_warps=w,
-                    pre_hook=pre_hook,
-                )
-                for values in itertools.product(*(ranges[name] for name in names))
-                for s in ranges["s"]
-                for w in ranges["w"]
-            ]
-
         if op_name in ("mv", "mv_row", "mv_column"):
             return [
                 triton.Config(
@@ -1065,6 +1046,14 @@ class TunedConfigLoader(object):
             "mv_row": self._build_single_expand_spec("mv_row"),
             "mv_column": self._build_single_expand_spec("mv_column"),
             "mv_reduce": self._build_single_expand_spec("mv_reduce"),
+            # Hygon's MV tuner includes the three input strides in its cache
+            # key. Use a separate expand contract so generic MV backends keep
+            # their existing two-key FlagTune schema.
+            "mv_hygon": self._build_single_expand_spec(
+                "mv_hygon",
+                yaml_op_name="mv",
+                expand_yaml_path=self._get_expand_config_path("mv"),
+            ),
             "mul": self._build_single_expand_spec(
                 "mul", expand_yaml_path=self._get_expand_config_path("mul")
             ),
